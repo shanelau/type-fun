@@ -131,6 +131,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onGameOver }) => {
       });
 
       // 更新子弹位置 - 添加追踪逻辑
+      //@ts-ignore
       setBullets((prevBullets) => {
         return prevBullets
           .map((bullet) => {
@@ -494,6 +495,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onGameOver }) => {
         <div style={{ marginTop: '50px', display: 'flex', gap: '25px' }}>
           <button
             onClick={(e) => {
+              e.preventDefault();
               setSelectedChars([]);
             }}
             style={{
@@ -510,6 +512,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onGameOver }) => {
           </button>
           <button
             onClick={(e) => {
+              e.preventDefault();
               setSelectedChars([...'FJ'.split('')]);
             }}
             style={{

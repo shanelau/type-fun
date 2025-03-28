@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { EnemyPlane, createEnemy, updateEnemy } from '../game/EnemyPlane';
+import shootAudio from '../assets/sounds/shoot.mp3';
+import explosionAudio from '../assets/sounds/explosion.mp3';
 import {
   Bullet,
   createBullet,
@@ -55,8 +57,8 @@ const GameScreen: React.FC<GameScreenProps> = ({ onGameOver }) => {
 
   // 初始化音效
   useEffect(() => {
-    shootSoundRef.current = new Audio('/src/assets/sounds/shoot.mp3');
-    explosionSoundRef.current = new Audio('/src/assets/sounds/explosion.mp3');
+    shootSoundRef.current = new Audio(shootAudio);
+    explosionSoundRef.current = new Audio(explosionAudio);
     return () => {
       if (shootSoundRef.current) shootSoundRef.current = null;
       if (explosionSoundRef.current) shootSoundRef.current = null;
@@ -290,7 +292,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onGameOver }) => {
 
       const key = event.key.toUpperCase();
       // 检查是否为字母
-      if (/^[A-Z]$/.test(key)) {
+      if (/^[A-Z0-9]$/.test(key)) {
         // 找到所有匹配字母的敌机
         const targetEnemies = enemies.filter((enemy) => enemy.letter === key);
 
@@ -298,7 +300,10 @@ const GameScreen: React.FC<GameScreenProps> = ({ onGameOver }) => {
           const containerWidth = gameContainerRef.current?.clientWidth || 800;
           const containerHeight = gameContainerRef.current?.clientHeight || 600;
           const bulletX = containerWidth / 2;
-          const bulletY = containerHeight - 70;
+
+          // 修改bulletY位置：计算玩家飞机的顶部位置
+          // 飞机位于底部20px处，高度为120px，所以顶部位置是容器高度-底部距离-飞机高度
+          const bulletY = containerHeight - 20 - 120;
 
           // 为每个目标敌机发射一颗子弹，并存储敌机ID用于追踪
           const newBullets = targetEnemies.map((targetEnemy) => {
@@ -605,15 +610,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onGameOver }) => {
       <div
         className='far-background'
         style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundImage: `url('/src/assets/images/space-background.jpg')`,
-          backgroundSize: 'cover',
           backgroundPosition: `center ${backgroundPosition}px`,
-          zIndex: 1,
         }}
       />
 
@@ -621,17 +618,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onGameOver }) => {
       <div
         className='nebula-layer'
         style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundImage: `url('/src/assets/images/bg.jpg')`,
-          backgroundSize: '1200px 1200px',
           backgroundPosition: `center ${middleLayerPosition}px`,
-          opacity: 0.4,
-          filter: 'blur(2px)',
-          zIndex: 2,
         }}
       />
 
@@ -639,45 +626,14 @@ const GameScreen: React.FC<GameScreenProps> = ({ onGameOver }) => {
       <div
         className='stars-layer'
         style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundImage: `url('/src/assets/images/bg.jpg')`,
-          backgroundSize: '500px 500px',
           backgroundPosition: `center ${frontLayerPosition}px`,
-          opacity: 0.7,
-          zIndex: 3,
         }}
       />
 
       {/* 行星装饰层 - 固定位置 */}
-      <div
-        className='planet'
-        style={{
-          position: 'absolute',
-          top: '50px',
-          left: '80px',
-          width: '150px',
-          height: '150px',
-          backgroundImage: `url('/src/assets/images/planet.png')`,
-          backgroundSize: 'contain',
-          backgroundRepeat: 'no-repeat',
-          opacity: 0.6,
-          filter: 'blur(1px)',
-          zIndex: 4,
-          animation: 'glow 4s infinite alternate',
-        }}
-      />
+      <div className='planet' />
 
-      {/* 发光效果 - 创建CSS动画 */}
-      <style>{`
-        @keyframes glow {
-          from { filter: blur(1px) brightness(1); }
-          to { filter: blur(1px) brightness(1.3); }
-        }
-      `}</style>
+      {/* 移除内联样式的glow动画定义，已移到CSS */}
 
       {/* 字符选择弹窗 - 在所有其他UI层之上显示 */}
       {showCharSelector && <CharacterSelector />}
@@ -787,24 +743,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onGameOver }) => {
           </div>
 
           {/* 玩家飞机 */}
-          <div
-            className='player-plane'
-            style={{
-              position: 'absolute',
-              bottom: '20px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: '60px',
-              height: '60px',
-              backgroundImage: `url('/src/assets/images/player-ship.png')`,
-              backgroundSize: 'contain',
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'center',
-              imageRendering: 'pixelated',
-              filter: 'drop-shadow(0 0 5px rgba(0, 255, 255, 0.7))',
-              zIndex: 10,
-            }}
-          ></div>
+          <div className='player-plane'></div>
 
           {/* 敌机 */}
           {enemies.map((enemy) => (
@@ -812,19 +751,8 @@ const GameScreen: React.FC<GameScreenProps> = ({ onGameOver }) => {
               key={enemy.id}
               className='enemy-plane'
               style={{
-                position: 'absolute',
                 left: `${enemy.x}px`,
                 top: `${enemy.y}px`,
-                width: '100px',
-                height: '100px',
-                backgroundImage: `url('/src/assets/images/enemy-ship.png')`, // 添加回背景图片，之前被删除了
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'center',
-                imageRendering: 'pixelated',
-                filter: 'drop-shadow(0 0 3px rgba(255, 0, 0, 0.5))',
-                transform: 'translateX(-50%) rotate(180deg)', // 添加旋转180度
-                zIndex: 7,
               }}
             >
               <div
@@ -839,7 +767,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onGameOver }) => {
                   transform: 'translateX(-50%),rotate(180deg)',
                   textShadow: '0 0 4px #000',
                   padding: '0px 6px',
-                  borderRadius: '4px',
+                  borderRadius: '100px',
                 }}
               >
                 {enemy.letter}
@@ -847,21 +775,14 @@ const GameScreen: React.FC<GameScreenProps> = ({ onGameOver }) => {
             </div>
           ))}
 
-          {/* 子弹 - 添加动画效果使追踪更自然 */}
+          {/* 子弹 - 保留动态旋转样式 */}
           {bullets.map((bullet) => (
             <div
               key={bullet.id}
               className='bullet'
               style={{
-                position: 'absolute',
                 left: `${bullet.x}px`,
                 top: `${bullet.y}px`,
-                width: '10px',
-                height: '20px',
-                backgroundImage: `url('/src/assets/images/laser-bullet.png')`,
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'center',
                 transform: `translateX(-50%) rotate(${
                   Math.atan2(
                     bullet.y -
@@ -874,30 +795,19 @@ const GameScreen: React.FC<GameScreenProps> = ({ onGameOver }) => {
                     (180 / Math.PI) +
                   90
                 }deg)`,
-                filter: 'drop-shadow(0 0 5px rgba(0, 255, 255, 0.7))',
-                transition: 'transform 0.1s ease',
-                zIndex: 8,
               }}
             ></div>
           ))}
 
-          {/* 爆炸效果 - 使用动画帧 */}
+          {/* 爆炸效果 */}
           {explosions.map((explosion) => (
             <div
               key={explosion.id}
               className='explosion'
               style={{
-                position: 'absolute',
                 left: `${explosion.x}px`,
                 top: `${explosion.y}px`,
-                width: '80px',
-                height: '80px',
-                backgroundImage: `url('/src/assets/images/explosion-sprite.png')`,
                 backgroundPosition: `${-80 * explosion.frame}px 0px`,
-                backgroundSize: 'auto 100%',
-                backgroundRepeat: 'no-repeat',
-                transform: 'translate(-50%, -50%)',
-                zIndex: 20,
               }}
             ></div>
           ))}

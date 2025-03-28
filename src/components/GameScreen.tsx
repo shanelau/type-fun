@@ -257,7 +257,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onGameOver }) => {
 
   // 增强的背景滚动效果 - 即使游戏未开始也可以滚动背景
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused || !gameStarted) return;
 
     const backgroundScroll = setInterval(() => {
       // 远景背景 - 滚动较慢
@@ -271,7 +271,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onGameOver }) => {
     }, 33);
 
     return () => clearInterval(backgroundScroll);
-  }, [isPaused]);
+  }, [isPaused, gameStarted]);
 
   // 处理键盘输入
   const handleKeyPress = useCallback(

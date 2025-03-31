@@ -224,18 +224,18 @@ const GameScreen: React.FC<GameScreenProps> = ({ onGameOver }) => {
           if (newExplosions.length > 0) {
             setExplosions((prev) => [...prev, ...newExplosions]);
           }
+          // 使用函数式更新，确保获取到最新的状态
+          if (hitCount > 0) {
+            // 更新分数 - 使用函数式更新而不是直接使用变量
+            setScore((prevScore) => prevScore + hitCount * 10);
+            // 更新击落计数
+            setShotDown((prev) => prev + hitCount);
+          }
 
           return remainingEnemies;
         });
-
-        // 使用函数式更新，确保获取到最新的状态
-        if (hitCount > 0) {
-          // 更新分数 - 使用函数式更新而不是直接使用变量
-          setScore((prevScore) => prevScore + hitCount * 10);
-          // 更新击落计数
-          setShotDown((prev) => prev + hitCount);
-        }
-
+        
+        
         return prevBullets;
       });
 

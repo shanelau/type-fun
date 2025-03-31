@@ -2,6 +2,8 @@
 
  You can choose the letters you want to practice.
 
+[Demo](shanelau.github.io/type-fun/)
+
 <img width="70%" src="./public/demo1.png" />
 <img width="70%" src="./public/demo2.png" />
 <img width="70%" src="./public/demo3.png" />
